@@ -29,7 +29,6 @@ import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
@@ -55,13 +54,11 @@ fun UnitConverter() {
     var inputValue = remember { mutableStateOf("") }
     var outputValue = remember { mutableStateOf("") }
     var inputUnit = remember { mutableStateOf("Meters") }
-    var outputUnit = remember { mutableStateOf("Meters") }
+    var outputUnit = remember { mutableStateOf("Feet") }
     var isInputDropdownExpanded = remember { mutableStateOf(false) }
     var isOutputDropdownExpanded = remember { mutableStateOf(false) }
     val conversionFactor = remember { mutableDoubleStateOf(1.00) }
-    val oConversionFactor = remember {mutableDoubleStateOf(1.00)}
-
-    val context = LocalContext.current
+    val oConversionFactor = remember {mutableDoubleStateOf(0.3048)}
 
     fun convertUnits() {
         val inputValueDouble = inputValue.value.toDoubleOrNull() ?: 0.0
@@ -85,17 +82,20 @@ fun UnitConverter() {
         // Input field
         OutlinedTextField( value = inputValue.value, onValueChange = {
             inputValue.value = it
+            convertUnits()
             },
             label = { Text("Enter Value") }
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         Row {
             // First Dropdown
             Box {
                 Button(onClick = { isInputDropdownExpanded.value = !isInputDropdownExpanded.value }) {
-                    Text(text = if(inputUnit.value == ""){
+                    Text(text = if (inputUnit.value == "") {
                         "Select"
-                    }else{
+                    } else {
                         inputUnit.value
                     })
                     Icon(Icons.Default.ArrowDropDown, contentDescription = null)
@@ -137,6 +137,33 @@ fun UnitConverter() {
                             inputUnit.value = "Millimeters"
                             isInputDropdownExpanded.value = false
                             conversionFactor.doubleValue = 0.001
+                            convertUnits()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Kilometers") },
+                        onClick = {
+                            inputUnit.value = "Kilometers"
+                            isInputDropdownExpanded.value = false
+                            conversionFactor.doubleValue = 1000.0
+                            convertUnits()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Inches") },
+                        onClick = {
+                            inputUnit.value = "Inches"
+                            isInputDropdownExpanded.value = false
+                            conversionFactor.doubleValue = 0.0254
+                            convertUnits()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Yards") },
+                        onClick = {
+                            inputUnit.value = "Yards"
+                            isInputDropdownExpanded.value = false
+                            conversionFactor.doubleValue = 0.9144
                             convertUnits()
                         }
                     )
@@ -191,14 +218,48 @@ fun UnitConverter() {
                             convertUnits()
                         }
                     )
+                    DropdownMenuItem(
+                        text = { Text("Kilometers") },
+                        onClick = {
+                            isOutputDropdownExpanded.value = false
+                            outputUnit.value = "Kilometers"
+                            oConversionFactor.doubleValue = 1000.0
+                            convertUnits()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Inches") },
+                        onClick = {
+                            isOutputDropdownExpanded.value = false
+                            outputUnit.value = "Inches"
+                            oConversionFactor.doubleValue = 0.0254
+                            convertUnits()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Yards") },
+                        onClick = {
+                            isOutputDropdownExpanded.value = false
+                            outputUnit.value = "Yards"
+                            oConversionFactor.doubleValue = 0.9144
+                            convertUnits()
+                        }
+                    )
                 }
             }
         }
 
 
+
         // Result section with top padding
         Spacer(modifier = Modifier.height(16.dp))
-        Text("Result ${outputValue.value}")
+        val result = outputValue.value.toDoubleOrNull() // Safely converts to Double or returns null
+        if (result != null && result != 0.0) {
+            Text(
+                text = "Result: ${outputValue.value} ${outputUnit.value}",
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
     }
 }
 
