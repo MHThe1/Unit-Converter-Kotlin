@@ -1,14 +1,11 @@
 package com.tutorials.unitconverter
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,7 +15,6 @@ import com.tutorials.unitconverter.ui.theme.UnitConverterTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
@@ -58,17 +54,18 @@ class MainActivity : ComponentActivity() {
 fun UnitConverter() {
     var inputValue = remember { mutableStateOf("") }
     var outputValue = remember { mutableStateOf("") }
-    var inputUnit = remember { mutableStateOf("Centimeters") }
-    var outputUnit = remember { mutableStateOf("Feet") }
+    var inputUnit = remember { mutableStateOf("Meters") }
+    var outputUnit = remember { mutableStateOf("Meters") }
     var isInputDropdownExpanded = remember { mutableStateOf(false) }
     var isOutputDropdownExpanded = remember { mutableStateOf(false) }
-    val conversionFactor = remember { mutableDoubleStateOf(0.01) }
+    val conversionFactor = remember { mutableDoubleStateOf(1.00) }
+    val oConversionFactor = remember {mutableDoubleStateOf(1.00)}
 
     val context = LocalContext.current
 
     fun convertUnits() {
         val inputValueDouble = inputValue.value.toDoubleOrNull() ?: 0.0
-        val result = (inputValueDouble * conversionFactor.doubleValue * 100.0).roundToInt() / 100.0
+        val result = (inputValueDouble * conversionFactor.doubleValue * 100.0 / oConversionFactor.doubleValue).roundToInt() / 100.0
         outputValue.value = result.toString()
     }
 
@@ -151,7 +148,7 @@ fun UnitConverter() {
             // Second Dropdown
             Box {
                 Button(onClick = { isOutputDropdownExpanded.value = true }) {
-                    Text(text = "Select")
+                    Text(outputUnit.value)
                     Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                 }
                 DropdownMenu(
@@ -159,37 +156,49 @@ fun UnitConverter() {
                     onDismissRequest = { isOutputDropdownExpanded.value = false }
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Kilograms") },
-                        onClick = { /* TODO: Handle selection */ }
+                        text = { Text("Centimeters") },
+                        onClick = {
+                            isOutputDropdownExpanded.value = false
+                            outputUnit.value = "Centimeters"
+                            oConversionFactor.doubleValue = 0.01
+                            convertUnits()
+                        }
                     )
                     DropdownMenuItem(
-                        text = { Text("Pounds") },
-                        onClick = { /* TODO: Handle selection */ }
+                        text = { Text("Meters") },
+                        onClick = {
+                            isOutputDropdownExpanded.value = false
+                            outputUnit.value = "Meters"
+                            oConversionFactor.doubleValue = 1.0
+                            convertUnits()
+                        }
                     )
                     DropdownMenuItem(
-                        text = { Text("Grams") },
-                        onClick = { /* TODO: Handle selection */ }
+                        text = { Text("Feet") },
+                        onClick = {
+                            isOutputDropdownExpanded.value = false
+                            outputUnit.value = "Feet"
+                            oConversionFactor.doubleValue = 0.3048
+                            convertUnits()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Millimeters") },
+                        onClick = {
+                            isOutputDropdownExpanded.value = false
+                            outputUnit.value = "Millimeters"
+                            oConversionFactor.doubleValue = 0.001
+                            convertUnits()
+                        }
                     )
                 }
             }
         }
 
-        // Button with Toast(popup feedback)
-        Button(
-            onClick = {
-                Toast.makeText(
-                    context,
-                    "Thanks for clicking!",
-                    Toast.LENGTH_LONG
-                ).show()
-            },
-        ) {
-            Text(text = "Convert")
-        }
 
         // Result section with top padding
         Spacer(modifier = Modifier.height(16.dp))
-        Text("Result")
+        Text("Result ${outputValue.value}")
     }
 }
 
